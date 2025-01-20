@@ -5,4 +5,66 @@ build-backend = "hatchling.build"
 [project]
 name = "code2prompt"
 version = "0.1.0"
-description = "A command-line tool that provides a condensed overview of a project's architecture"
+description = "A command-line tool that provides a condensed overview of a project's architecture, optimized for integration with AI-driven tools"
+authors = [
+    { name = "Code2Prompt Contributors" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Software Development :: Documentation",
+]
+dependencies = [
+    "click>=8.0.0",  # CLI framework
+    "rich>=10.0.0",  # Terminal formatting and visualization
+    "pyperclip>=1.8.0",  # Clipboard operations
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "black>=23.0.0",
+    "isort>=5.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.0.290",
+]
+
+[project.scripts]
+c2p = "code2prompt.cli:main"
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.mypy]
+python_version = "3.9"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --cov=code2prompt"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
