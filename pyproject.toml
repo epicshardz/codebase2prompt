@@ -1,0 +1,8 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "code2prompt"
+version = "0.1.0"
+description = "A command-line tool that provides a condensed overview of a project's architecture"
