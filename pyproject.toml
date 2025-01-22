@@ -1,70 +1,51 @@
 [build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
-name = "code2prompt"
+[tool.poetry]
+name = "Codebase2Prompt"
 version = "0.1.0"
-description = "A command-line tool that provides a condensed overview of a project's architecture, optimized for integration with AI-driven tools"
-authors = [
-    { name = "Code2Prompt Contributors" }
-]
+description = "Generate prompts from codebase structure and content"
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.9"
-classifiers = [
-    "Development Status :: 3 - Alpha",
-    "Environment :: Console",
-    "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
-    "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: Software Development :: Documentation",
-]
-dependencies = [
-    "click>=8.0.0",  # CLI framework
-    "rich>=10.0.0",  # Terminal formatting and visualization
-    "pyperclip>=1.8.0",  # Clipboard operations
-]
 
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.0.0",
-    "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "isort>=5.0.0",
-    "mypy>=1.0.0",
-    "ruff>=0.0.290",
-]
+[tool.poetry.dependencies]
+python = "^3.8"
+click = "^8.1.3"
+rich = "^13.3.1"
+pyperclip = "^1.8.2"
+configparser = "^5.3.0"
 
-[project.scripts]
-c2p = "code2prompt.cli:main"
+[tool.poetry.scripts]
+c2p = "Codebase2Prompt.cli:cli"
 
-[tool.black]
-line-length = 100
-target-version = ["py39"]
-
-[tool.isort]
-profile = "black"
-line_length = 100
-multi_line_output = 3
-
-[tool.mypy]
-python_version = "3.9"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-disallow_untyped_defs = true
+[tool.poetry.dev-dependencies]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+black = "^23.1.0"
+isort = "^5.11.4"
+mypy = "^1.0.0"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --cov=code2prompt"
+addopts = "-ra -q --cov=Codebase2Prompt --cov-report=term-missing"
 testpaths = ["tests"]
 
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-select = ["E", "F", "B", "I", "N", "UP", "PL", "RUF"]
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''

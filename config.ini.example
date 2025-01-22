@@ -1,0 +1,19 @@
+[paths]
+# Default paths to scan
+default_path = ./src
+
+[filters]
+# Default file extensions to include
+extensions = .py,.js,.ts
+
+[exclusions]
+# Patterns to exclude from scanning
+patterns = __pycache__,node_modules,.git,.venv
+
+[output]
+# Default output format (markdown or json)
+format = markdown
+# Whether to include file paths in output
+show_paths = true
+# Whether to include function signatures
+show_signatures = true
