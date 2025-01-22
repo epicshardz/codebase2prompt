@@ -18,7 +18,7 @@ There are many times the LLM context window is maxed out when providing the full
 ### Installation Steps
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Codebase2Prompt.git
+git clone https://github.com/epicshardz/codebase2prompt
 cd Codebase2Prompt
 ```
 
