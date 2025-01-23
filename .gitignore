@@ -1,5 +1,26 @@
+# Python
 __pycache__/
 *.pyc
-.venv/
-.pytest_cache/
+*.pyo
+
+# Environment
+venv/
+.env
+
+# Coverage
+.coverage
 htmlcov/
+
+# Build
+*.egg-info/
+dist/
+build/
+
+# IDE Settings
+.vscode/
+
+# Dependency Management
+poetry.lock
+
+# PyPI credentials
+.pypirc
