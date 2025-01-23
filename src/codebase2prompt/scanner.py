@@ -20,13 +20,8 @@ def glob_to_regex(pattern: str) -> Pattern[str]:
     """
     # Handle **/ pattern for recursive directory matching
     if '**' in pattern:
-        # Replace ** with a pattern that matches zero or more directory components
         pattern = pattern.replace('**', '__DOUBLEWILDCARD__')
-        # Convert to regex using fnmatch
         regex = translate(pattern)
-        # Replace the marker with a pattern that matches zero or more directory components
-        # [^/\\]* matches any characters except / and \
-        # (?:/|\\\\).* matches / or \ followed by any characters
         regex = regex.replace('__DOUBLEWILDCARD__', '(?:[^/\\\\]*(?:/|\\\\\\\\))*[^/\\\\]*')
         return compile(regex)
     return compile(translate(pattern))
@@ -85,47 +80,34 @@ class FileScanner:
         """
         path_str = str(entry.path)
 
-        # Check if path contains venv directory
-        # if "venv" in Path(path_str).parts:
-        #     logger.debug(f"Excluding {path_str} - in venv directory")
-        #     return False
-
-        # Add trailing slash for directories to match patterns like **venv/**
         if entry.is_dir(follow_symlinks=False):
             path_str += '/'
             logger.debug(f"Checking directory: {path_str}")
-            # For directories, we only need to check exclude patterns
             if self._matches_pattern(path_str, self.exclude_patterns, "exclude"):
-                # logger.debug(f"Excluding directory {path_str} based on exclude patterns")
                 return False
             return True
 
-        # For files, check if it's a valid file first
         if not entry.is_file(follow_symlinks=False):
             return False
 
-        # Check if file is empty
         try:
             if os.path.getsize(entry.path) == 0:
-                # logger.debug(f"Skipping empty file: {path_str}")
                 return False
         except OSError:
-            # logger.debug(f"Skipping inaccessible file: {path_str}")
             return False
 
-        # Check exclude patterns first for files
+        # Check if this is a root directory file
+        is_root_file = len(Path(path_str).relative_to(Path(path_str).anchor).parts) == 1
+        
+        # Always include root directory files unless explicitly excluded
+        if is_root_file:
+            return not self._matches_pattern(path_str, self.exclude_patterns, "exclude")
+
+        # For non-root files, apply both include and exclude patterns
         if self._matches_pattern(path_str, self.exclude_patterns, "exclude"):
-            # logger.debug(f"Excluding file {path_str} based on exclude patterns")
             return False
-
-        # Finally check include patterns
-        included = self._matches_pattern(path_str, self.include_patterns, "include")
-        # if included:
-        #     # logger.debug(f"Including file: {path_str}")
-        # else:
-        #     # logger.debug(f"Excluding file {path_str} - doesn't match include patterns")
             
-        return included
+        return self._matches_pattern(path_str, self.include_patterns, "include")
 
     def _scan_directory(self, path: Path) -> Iterator[Path]:
         """Scan a single directory for files.
@@ -137,11 +119,11 @@ class FileScanner:
             Path objects for matching files
         """
         try:
+            # First process files in the current directory
             for entry in os.scandir(str(path)):
                 try:
                     if entry.is_file(follow_symlinks=False):
                         try:
-                            # Check if file is text and decodable
                             with open(entry.path, 'r', encoding='utf-8') as f:
                                 f.read()
                             if self._should_include(entry):
@@ -151,11 +133,9 @@ class FileScanner:
                         except Exception:
                             continue
                     elif entry.is_dir(follow_symlinks=False):
-                        # Skip venv directory entirely
-                        if "venv" in Path(entry.path).parts:
-                            # logger.debug(f"Skipping venv directory: {entry.path}")
+                        # Only skip actual virtual environment directories
+                        if Path(entry.path).name == "venv":
                             continue
-                        # Only recurse if directory isn't excluded
                         path_str = str(entry.path)
                         if not self._matches_pattern(path_str, self.exclude_patterns, "exclude"):
                             yield from self._scan_directory(Path(entry.path))
@@ -165,26 +145,31 @@ class FileScanner:
             return
 
     def scan(self, path: Path) -> Iterator[Path]:
-        """Scan a directory for files matching the patterns.
+        """Scan a directory or file for matching patterns.
 
         Args:
-            path: Directory path to scan
+            path: Path to scan (can be directory or file)
 
         Yields:
             Path objects for matching files
 
         Raises:
-            NotADirectoryError: If path is not a directory
+            NotADirectoryError: If path is not a directory or file
         """
-        if not path.is_dir():
-            raise NotADirectoryError(f"Path is not a directory: {path}")
-
-        # Skip if path itself contains venv
-        if "venv" in path.parts:
-            # logger.debug(f"Skipping venv directory path: {path}")
-            return
-
-        yield from self._scan_directory(path)
+        if path.is_file():
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    f.read()
+                if self._should_include(os.scandir(path.parent).__next__()):
+                    yield path
+            except (UnicodeDecodeError, OSError):
+                return
+        elif path.is_dir():
+            if "venv" in path.parts:
+                return
+            yield from self._scan_directory(path)
+        else:
+            raise NotADirectoryError(f"Path is not a directory or file: {path}")
 
 
 def scan_directory(path: Path, include_patterns=None, exclude_patterns=None) -> Iterator[Path]:
@@ -198,7 +183,6 @@ def scan_directory(path: Path, include_patterns=None, exclude_patterns=None) -> 
     Yields:
         Path objects for matching files
     """
-    # Convert glob patterns to regex patterns
     include_regex = [glob_to_regex(p) for p in (include_patterns or [])]
     exclude_regex = [glob_to_regex(p) for p in (exclude_patterns or [])]
     

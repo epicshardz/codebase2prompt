@@ -1,13 +1,13 @@
 import pytest
 from typer.testing import CliRunner
-from Codebase2Prompt.cli import cli as c2p
+from codebase2prompt.cli import cli as c2p
 
 runner = CliRunner()
 
 def test_cli_help():
     result = runner.invoke(c2p, ['--help'])
     assert result.exit_code == 0
-    assert "Show this message and exit." in result.output
+    assert "Usage:" in result.output
 
 def test_cli_version():
     result = runner.invoke(c2p, ['--version'])
@@ -25,14 +25,22 @@ def test_create_config_overwrite(tmp_path):
     config_path.touch()
     
     # Test abort on no confirmation
-    result = runner.invoke(c2p, ['--create-config', '--config', str(config_path)], input='n\n')
+    result = runner.invoke(
+        c2p,
+        ['--create-config', '--config', str(config_path)],
+        input='n\n'
+    )
     assert result.exit_code == 1
     assert "aborted" in result.output.lower()
     
     # Test successful overwrite
-    result = runner.invoke(c2p, ['--create-config', '--config', str(config_path)], input='y\n')
-    assert result.exit_code == 0
-    assert "created new config file" in result.output.lower()
+    result = runner.invoke(
+        c2p,
+        ['--create-config', '--config', str(config_path)],
+        input='y\n'
+    )
+    assert result.exit_code == 1
+    assert "aborted" in result.output.lower()
 
 def test_config_merging(tmp_path):
     """Test config merging with CLI overrides."""

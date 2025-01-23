@@ -1,6 +1,7 @@
 """Command-line interface for Codebase2Prompt."""
 
 import logging
+import sys
 import typer
 import pyperclip
 from pathlib import Path
@@ -23,7 +24,13 @@ def merge_config_with_cli(config: Dict[str, Dict[str, str]], cli_args: dict) -> 
     
     # Handle include patterns
     config_include = defaults.get("include", "").split(",")
-    merged["include"] = [e.strip() for e in config_include if e.strip()]
+    default_types = defaults.get("default_include_types", "*.py,*.js,*.ts,*.html,*.css").split(",")
+    
+    # If include is '*', use default types unless overridden
+    if config_include == ["*"]:
+        merged["include"] = [e.strip() for e in default_types if e.strip()]
+    else:
+        merged["include"] = [e.strip() for e in config_include if e.strip()]
     
     # Handle exclude patterns
     config_exclude = defaults.get("exclude", "").split(",")
@@ -36,17 +43,22 @@ def merge_config_with_cli(config: Dict[str, Dict[str, str]], cli_args: dict) -> 
     except ValueError:
         merged["max_file_size"] = 1048576  # Default if invalid
     
-    # Handle clipboard - CLI flags take precedence over config
+    # Handle clipboard - CLI flags override config, but config is used if no flags
     config_clipboard = defaults.get("clipboard", "true").lower() == "true"
+    merged["clipboard"] = config_clipboard  # Default to config value
+    
+    # CLI flags override config
     if cli_args.get("enable_clipboard"):
         merged["clipboard"] = True
-    elif cli_args.get("no_clipboard"):
+    if cli_args.get("no_clipboard"):
         merged["clipboard"] = False
-    else:
-        merged["clipboard"] = config_clipboard
     
     # Handle output format
     merged["output_format"] = cli_args.get("output_format") or defaults.get("output_format", "markdown")
+    
+    # Handle line numbers
+    config_line_numbers = defaults.get("line_numbers", "false").lower() == "true"
+    merged["line_numbers"] = cli_args.get("line_numbers", config_line_numbers)
     
     return merged
 
@@ -93,6 +105,11 @@ def main(
         None,
         "--output-format",
         help="Override output format (markdown, json, or yaml)"
+    ),
+    line_numbers: bool = typer.Option(
+        False,
+        "--line-numbers",
+        help="Include line numbers in the output"
     )
 ) -> None:
     """Generate a prompt from codebase structure and content."""
@@ -101,8 +118,36 @@ def main(
     logger = logging.getLogger(__name__)
     
     try:
-        # Use default config
+        # Handle config creation
+        if create_config:
+            if config.exists():
+                confirm = typer.confirm(
+                    f"Config file {config} already exists. Overwrite?",
+                    default=False
+                )
+                if not confirm:
+                    typer.echo("Aborted config creation", err=True)
+                    raise typer.Abort()
+            
+            try:
+                create_default_config(config)
+                typer.echo(f"Created new config file at {config}")
+                raise typer.Exit()
+            except Exception as e:
+                typer.echo(typer.style(f"Error creating config: {str(e)}", fg="red"), err=True)
+                raise typer.Exit(code=1)
+
+        # Load config file if it exists
         config_values = {"DEFAULT": DEFAULT_CONFIG}
+        if config.exists():
+            try:
+                config_values = load_config(config)
+            except Exception as e:
+                typer.echo(
+                    typer.style(f"Error loading config: {str(e)}", fg="red"),
+                    err=True
+                )
+                raise typer.Exit(code=1)
         
         # Convert typer argument to Path
         if hasattr(path, 'default'):
@@ -122,6 +167,10 @@ def main(
             "enable_clipboard": enable_clip,
             "output_format": out_format
         })
+        
+        # Validate clipboard config
+        if not isinstance(args["clipboard"], bool):
+            args["clipboard"] = str(args["clipboard"]).lower() == "true"
         
         formatter = Formatter()
         files = get_codebase_files(
@@ -153,8 +202,13 @@ def main(
                     typer.style(f"Failed to copy to clipboard: {str(e)}", fg="red"),
                     err=True
                 )
-    except typer.Exit:
-        raise
+    except typer.Exit as e:
+        if hasattr(e, 'exit_code'):
+            raise typer.Exit(code=e.exit_code)  # Preserve exit code when re-raising
+        else:
+            raise  # Re-raise the original exception if no exit_code
+    except typer.Abort:
+        raise typer.Exit(code=1)  # Convert Abort to Exit with code 1
     except Exception as e:
         typer.echo(typer.style(f"Error: {str(e)}", fg="red"), err=True)
         raise typer.Exit(code=1)

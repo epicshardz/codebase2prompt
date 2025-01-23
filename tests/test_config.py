@@ -1,6 +1,6 @@
 import pytest
 from pathlib import Path
-from Codebase2Prompt.config import load_config, create_default_config
+from codebase2prompt.config import load_config, create_default_config
 
 def test_create_default_config(tmp_path):
     """Test creating a default config file."""

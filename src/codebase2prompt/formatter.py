@@ -6,6 +6,7 @@ from rich.console import Console
 import json
 import yaml
 from collections import defaultdict
+from .file_processor import FileProcessor
 
 class Formatter:
     """Handles formatting of codebase structure and content."""
@@ -14,14 +15,17 @@ class Formatter:
 
     def __init__(self, console: Optional[Console] = None):
         self.console = console or Console()
+        self.file_processor = FileProcessor()
 
-    def format(self, files: Dict[Path, List[str]], output_format: str = "markdown", max_lines: int = 10) -> str:
+    def format(self, files: Dict[Path, List[str]], output_format: str = "markdown", 
+              max_lines: int = 10, no_codeblock: bool = False) -> str:
         """Format codebase files into a structured prompt.
         
         Args:
             files: Dictionary of files and their contents
             output_format: Format to output (markdown, json, or yaml)
             max_lines: Maximum number of lines to show per file
+            no_codeblock: Whether to disable markdown code blocks
             
         Returns:
             Formatted output string
@@ -29,6 +33,15 @@ class Formatter:
         Raises:
             ValueError: If output_format is not supported
         """
+        # Process files using FileProcessor
+        processed_files = {}
+        for file_path, lines in files.items():
+            processed = self.file_processor.process_file(
+                file_path,
+                no_codeblock=no_codeblock
+            )
+            if processed:
+                processed_files[file_path] = processed['content'].split('\n')[:max_lines]
         if output_format not in self.SUPPORTED_FORMATS:
             raise ValueError(f"Unsupported format: {output_format}. Supported formats: {self.SUPPORTED_FORMATS}")
             
@@ -47,7 +60,7 @@ class Formatter:
         tree = defaultdict(dict)
         for file_path in files:
             current = tree
-            # Convert to relative path from current working directory
+            # Get path relative to current working directory
             rel_path = file_path.relative_to(Path.cwd())
             parts = rel_path.parts
             for i, part in enumerate(parts[:-1]):
@@ -89,6 +102,7 @@ class Formatter:
         # Add header
         output.append("# Codebase Structure")
         output.append("\n## Project Structure")
+        output.append(f"\nDirectory: {Path.cwd()}")
         
         # Build and format tree structure
         if files:

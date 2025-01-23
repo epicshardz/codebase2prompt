@@ -1,15 +1,15 @@
 import pytest
 from unittest.mock import patch, MagicMock
 from typer.testing import CliRunner
-from Codebase2Prompt.cli import cli as c2p
+from codebase2prompt.cli import cli as c2p
 
 runner = CliRunner()
 
 def test_clipboard_copy():
     """Test clipboard copy functionality."""
     with patch('pyperclip.copy') as mock_copy, \
-         patch('Codebase2Prompt.cli.get_codebase_files') as mock_files, \
-         patch('Codebase2Prompt.cli.Formatter') as mock_formatter:
+         patch('codebase2prompt.cli.get_codebase_files') as mock_files, \
+         patch('codebase2prompt.cli.Formatter') as mock_formatter:
         mock_files.return_value = {}
         mock_formatter.return_value.format.return_value = "test output"
         # Test with clipboard disabled
@@ -26,8 +26,8 @@ def test_clipboard_copy():
 def test_clipboard_error():
     """Test clipboard error handling."""
     with patch('pyperclip.copy', side_effect=Exception("Clipboard error")), \
-         patch('Codebase2Prompt.cli.get_codebase_files') as mock_files, \
-         patch('Codebase2Prompt.cli.Formatter') as mock_formatter:
+         patch('codebase2prompt.cli.get_codebase_files') as mock_files, \
+         patch('codebase2prompt.cli.Formatter') as mock_formatter:
         mock_files.return_value = {}
         mock_formatter.return_value.format.return_value = "test output"
         result = runner.invoke(c2p, ['.'])
@@ -45,8 +45,8 @@ def test_clipboard_with_config(tmp_path):
     
     # Test config overrides default clipboard behavior
     with patch('pyperclip.copy') as mock_copy, \
-         patch('Codebase2Prompt.cli.get_codebase_files') as mock_files, \
-         patch('Codebase2Prompt.cli.Formatter') as mock_formatter:
+         patch('codebase2prompt.cli.get_codebase_files') as mock_files, \
+         patch('codebase2prompt.cli.Formatter') as mock_formatter:
         mock_files.return_value = {}
         mock_formatter.return_value.format.return_value = "test output"
         result = runner.invoke(c2p, ['.', '--config', str(config_path)])

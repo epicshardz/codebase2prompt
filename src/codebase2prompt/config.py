@@ -11,7 +11,8 @@ DEFAULT_CONFIG = {
     "max_file_size": "1048576",  # 1MB
     "clipboard": "true",
     "auto_copy": "true",
-    "output_format": "markdown"
+    "output_format": "markdown",
+    "line_numbers": "false"
 }
 
 def validate_and_normalize_config(config: configparser.ConfigParser) -> Dict[str, Dict[str, str]]:

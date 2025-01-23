@@ -3,12 +3,38 @@ requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-name = "Codebase2Prompt"
-version = "0.1.0"
+name = "codebase2prompt"
+version = "0.1.4"
 description = "Generate prompts from codebase structure and content"
-authors = ["Your Name <you@example.com>"]
+authors = ["Devin Bates <devinlbates@gmail.com>"]
 license = "MIT"
 readme = "README.md"
+packages = [
+    { include = "codebase2prompt", from = "src" }
+]
+
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
+    "Topic :: Utilities"
+]
+
+keywords = ["llm", "prompt-engineering", "code-analysis", "ai", "developer-tools"]
+
+repository = "https://github.com/epicshardz/codebase2prompt"
+homepage = "https://github.com/epicshardz/codebase2prompt"
+documentation = "https://github.com/epicshardz/codebase2prompt#readme"
+
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/epicshardz/codebase2prompt/issues"
 
 [tool.poetry.dependencies]
 python = "^3.8"
@@ -16,9 +42,14 @@ click = "^8.1.3"
 rich = "^13.3.1"
 pyperclip = "^1.8.2"
 configparser = "^5.3.0"
+typer = "^0.9.0"
+pyyaml = "^6.0.1"
+esprima = "^4.0.1"
+beautifulsoup4 = "^4.12.0"
+css-validator = "^0.3.0"
 
 [tool.poetry.scripts]
-c2p = "Codebase2Prompt.cli:cli"
+c2p = "codebase2prompt.cli:cli"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.2.0"
@@ -29,7 +60,7 @@ mypy = "^1.0.0"
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-addopts = "-ra -q --cov=Codebase2Prompt --cov-report=term-missing"
+addopts = "-ra -q --cov=codebase2prompt --cov-report=term-missing"
 testpaths = ["tests"]
 
 [tool.black]

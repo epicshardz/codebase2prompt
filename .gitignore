@@ -21,3 +21,6 @@ build/
 
 # Dependency Management
 poetry.lock
+
+# PyPI credentials
+.pypirc

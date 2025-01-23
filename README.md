@@ -1,7 +1,7 @@
 # Codebase2Prompt
 
 ## Description
-Codebase2Prompt is a minimal command-line tool that generates structured prompts from codebases. It does not provide the full function code, but purely the method addresses. It supports multiple output formats (Markdown, JSON, YAML) and can automatically copy results to your clipboard. The tool is particularly useful for:
+Codebase2Prompt is a minimal command-line tool that generates structured prompts from codebases. It does not provide the full function code, but purely the method addresses. It supports multiple output formats (Markdown, JSON, YAML) and automatically copies results to your clipboard. The tool is particularly useful for:
 - Creating codebase overviews for AI prompts
 - Generating documentation templates
 - Sharing code context with collaborators
@@ -9,17 +9,27 @@ Codebase2Prompt is a minimal command-line tool that generates structured prompts
 ## Purpose
 
 There are many times the LLM context window is maxed out when providing the full codebase. Because it is good practice to name functions with logical addresses, it goes to reason that a LLM will be able to intuit what a class, method, etc contains based on its naming and location in the folder structure. This is meant to provide high level understanding to the LLM in times where LLM drift becomes and issue. 
+
 ## Installation
 
-### Prerequisites
-- Python 3.8+
-- Poetry (for dependency management)
+### PyPI Installation
+Install directly from PyPI:
+```bash
+pip install codebase2prompt
+```
 
-### Installation Steps
+Verify installation:
+```bash
+c2p --version
+```
+
+### Development Installation
+For local development:
+
 1. Clone the repository:
 ```bash
 git clone https://github.com/epicshardz/codebase2prompt
-cd Codebase2Prompt
+cd codebase2prompt
 ```
 
 2. Install dependencies using Poetry:
@@ -31,11 +41,6 @@ poetry install
 ```bash
 poetry shell
 pip install .
-```
-
-4. Verify installation:
-```bash
-c2p --version
 ```
 
 ## Configuration
